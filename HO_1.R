@@ -1,25 +1,3 @@
----
-title: "Hands_on_I Biomedical data analysis"
-author: "Yangxin Zhan Du (yangxin.zhan01@estudiant.upf.edu)"
-date: 'Last update: `r format(Sys.time(), "%d %B, %Y")`'
-output:
-  html_document:
-    toc: true
-  pdf_document:
-    toc: true
----
-
-------------------------------------------------------------------------
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-This practical focuses on data wrangling, exploratory data analysis, visualization, and critical comparison with published results using real biomedical data.
-
-We will work with the publication [**Proteomic and Metabolomic Characterization of COVID-19 Patient Sera**](https://www.sciencedirect.com/science/article/pii/S0092867420306279)
-
-```{r}
 library(ggplot2)
 library(openxlsx)
 library(tidyverse)
@@ -33,19 +11,6 @@ library(psych)
 library(kableExtra)
 library(outliers)
 library(naniar)
-```
-
-# Exercise 1
-
-Download and load Supplementary Table 1 (“Additional Demographical and Baseline Characteristics of COVID-19 Patients and Control Groups”) from the supplementary materials of the publication.
-
-## Exercise 1.1
-
-Reproduce Table 1 from the manuscript using the supplementary data. Match the reported summary statistics as closely as possible.
-
-Briefly discuss any discrepancies between your results and the published table, and provide possible explanations.
-
-```{r}
 
 table_1 <- read.xlsx("./0_dataset_raw/table_s1.xlsx", sheet = "Clinical_information")
 
@@ -178,24 +143,16 @@ html_table1_format <- tags$table(
 
 browsable(html_table1_format)
 
+
 #Discussion:
 # In this exercise, we have recreated the table from the paper using the features available in the supplementary dataset. 
 # The only difference between our table and the one in the paper is the gender distribution in the non-severe group: 
 # the paper reports 25 males and 12 females, whereas our data show 23 males and 14 females. 
 # This discrepancy is not a technical error. We have cross-checked the dataset in Excel, and the numbers match our table. 
 # It is possible that the authors made a misreporting or updated values during the experiment.
-```
 
-## Exercise 1.2
 
-Perform an exploratory data analysis (EDA) of the dataset. At a minimum, include:
-
--   Descriptive statistics for key variables\
--   Appropriate visualizations (e.g. distributions, group comparisons)\
--   A brief written summary of notable patterns, anomalies, or data quality issues
-
-```{r}
-
+#Exercise_1_2
 #descriptive statistics
 numeric_variables <- table_1 %>% select(where(is.numeric))
 
@@ -214,8 +171,9 @@ categorical_descriptive_table$sex.g
 
 # Discussion:
 # With this chunk of code, we became more familiar with the dataset by separating categorical and numerical variables.
-# For numerical variables, we performed descriptive analyses, including the number of observations, mean, standard deviation, and range.
 # For categorical variables, we calculated the number of instances within each category.
+# For numerical variables, we performed descriptive analyses, including the number of observations, mean, standard deviation, and range.
+
 
 #graph 1
 table_1 %>% ggplot(aes(x= group.d , y= `age.(year)`, fill = group.d)) + geom_violin(alpha = 0.7, trim = FALSE) + geom_boxplot(width = 0.1) +
@@ -284,15 +242,9 @@ table_long_par %>% ggplot(aes(x= group_disease, y= value, fill = group_disease))
 # and that more than 20% of the clinical parameters are missing overall, indicating potential data quality issues.
 # Finally, in the fifth graph, we used boxplots to compare clinical parameters between severity groups. We observed that severe cases
 # generally present lower values for most parameters, except for certain variables such as glucose levels.
-```
 
-# Exercise 2
+#Exercise_2_1 
 
-## Exercise 2.1
-
-Reproduce Supplementary Figure 1 using the data without modifying or removing any observations. Use the same variables and groupings as in the original figure.
-
-```{r}
 table_clinical <- table_1 %>%  select(group_disease = `group.d`,
                                       white_blood_cell = `wbc.count,.×109/l`,
                                       lympocyte = `lymphocyte.count,.×109/l`,
@@ -330,15 +282,11 @@ table_long %>%
   scale_color_manual(values = c("blue", "yellow", "red")) + theme_bw()
 
 
-```
 
-## Exercise 2.2
 
-Identify and handle outliers using an appropriate and well-justified method (e.g. removal, transformation, or robust statistics).
 
-Reproduce Supplementary Figure 1 after outlier handling and discuss how and why the results change.
 
-```{r}
+#Exercise 2.2
 # After seeing the data, we conclude that we are going to impute the third quartil to the outliers. The reason is that we don't have a larger n (we cannot remove a lot of values) and some data is realted with several COVID states.
 
 #Defining the function and imputing
@@ -404,13 +352,9 @@ table_long_imputed %>%
 # The median and overall trends across disease groups remain similar, but group comparisons become clearer. 
 # This indicates that extreme values mainly affected dispersion rather than the central tendency of the data.
 
-```
 
-# Exercise 3
+#Exercise 3
 
-Create a heatmap of the biomarker data. Include group and gender as annotation variables.
-
-```{r}
 table_clinical_heatmap <- table_1 %>%  select(group_disease = `group.d`,
                                               gender = `sex.g` ,
                                               white_blood_cell = `wbc.count,.×109/l`,
@@ -555,16 +499,15 @@ ggplot(heatmap_means, aes(x = biomarker, y = group_label, fill = z_score)) +
     y = "Group - Gender\n", 
     title = "Average Biomarker Levels by Group and Gender"
   )
-```
 
-# Conclusion
 
-Write a concise conclusion (1 paragraphs) summarizing the main differences observed across the three patient groups based on the twelve clinical parameters. Support your statements with evidence from
+# It is difficult to identify a clear overall trend. However, several parameters appear to be higher
+# in the severe groups compared with the non COVID group. These include alanine aminotransferase,
+# aspartate aminotransferase, C reactive protein, creatinine, direct bilirubin, glucose, and
+# glutamyltransferase. These difference are observed when the data are separated by sex, in which
+#males generally show higher levels of these parameters
+#
+# In contrast, lymphocyte count, monocyte count, platelet count, total bilirubin, and white blood
+# cell count tend to be higher in the non COVID group and in females groups.
 
-It is difficult to identify a clear overall trend. However, several parameters appear to be higher in the severe groups compared with the non COVID group. These include alanine aminotransferase, aspartate aminotransferase, C reactive protein, creatinine, direct bilirubin, glucose, and glutamyltransferase. These difference are observed when the data are separated by sex, in which males generally show higher levels of these parameters. In contrast, lymphocyte count, monocyte count, platelet count, total bilirubin, and white blood cell count tend to be higher in the non COVID group and in females groups.
 
-# session info {.unnumbered}
-
-```{r, results='asis',  echo=FALSE, message=FALSE }
-sessionInfo()
-```
